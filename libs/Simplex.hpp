@@ -11,7 +11,7 @@ class Simplex {
         static const int NUM_FACES = 6;
         static const int NUM_VERTEX = 4;
     private:
-        vector<vector<Point>> faces;
+        vector<vector<Point> > faces;
         vector<Point> normals;
     public:
         Simplex();

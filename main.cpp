@@ -1,15 +1,15 @@
 #define GL_SILENCE_DEPRECATION
 #define STB_IMAGE_IMPLEMENTATION
 #include <GLUT/GLUT.h>
-#include<math.h>
-#include<vector>
-#include<iostream>
-#include<string>
-#include<random>
-#include<SFML/Audio.hpp>
-#include<SFML/Graphics.hpp>
-#include<SFML/Window.hpp>
-#include<SFML/System.hpp>
+#include <math.h>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <random>
+#include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
 #include "libs/stb_image.h"
 #include "libs/Board.hpp"
 using namespace std;
@@ -39,15 +39,12 @@ void Init(void) {
     glClearColor (0.3, 0.3, 0.3, 0.0);
     glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
 
-    string path = "images/";
-    int i = 1;
-    for (const auto & entry : filesystem::directory_iterator(path)) {
-        LoadTexture(i++, entry.path().c_str());
+    for (int i = 1; i <= board.NUM_COLS * board.NUM_ROWS; ++i) {
+        string path = "images/" + to_string(i) + ".bmp";
+        LoadTexture(i, path.c_str());
     }
 }
 
@@ -64,7 +61,7 @@ void SpecialKeys(int key, int x, int y) {
     glutPostRedisplay();
 }
 
-void Display() {
+void BaseDisplay() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -75,9 +72,32 @@ void Display() {
         glLightfv(GL_LIGHT0, GL_POSITION, position);
     }
     glPopMatrix();
+}
+
+void Display() {
+    BaseDisplay();
     board.Draw();
     glFlush();
     glutSwapBuffers();
+}
+
+void FakeDisplay() {
+    BaseDisplay();
+    board.FakeDraw();
+}
+
+void OnClick(int &x, int &y) {
+    FakeDisplay();
+    unsigned char color[3];
+    glReadPixels(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
+    board.Move(color[0]);
+}
+
+void MouseKeys(int key, int state, int x, int y) {
+    if (state == GLUT_DOWN && key == GLUT_LEFT_BUTTON) {
+        OnClick(x, y);
+    }
+    glutPostRedisplay();
 }
 
 void Reshape(int w, int h)
@@ -98,6 +118,7 @@ int main(int argc, char* argv[]) {
     glutCreateWindow("15 puzzle");
     Init();
     glutSpecialFunc(SpecialKeys);
+    glutMouseFunc(MouseKeys);
     glutDisplayFunc(Display);
     glutReshapeFunc(Reshape);
     glutMainLoop();
