@@ -24,13 +24,12 @@ class Board {
         void ChangeRotateX(int delta) {this->rotate_x += delta;}
         void ChangeRotateY(int delta) {this->rotate_y += delta;}
         void ChangeRotateZ(int delta) {this->rotate_z += delta;}
-        void Draw();
-        void FakeDraw();
+        void Draw(bool);
         void Move(int color);
 };
 
  Board :: Board() {
-    rotate_x = 0;
+    rotate_x = -10;
     rotate_y = 0;
     rotate_z = 0;
     elements.resize(NUM_ROWS, vector<int>(NUM_COLS));
@@ -41,95 +40,45 @@ class Board {
             elements[i][j] = ind++;
         }
     }
+    pair<int, int> empty = {NUM_ROWS-1, NUM_COLS-1};
+    vector<int> di = {1, -1, 0, 0};
+    vector<int> dj = {0,  0, 1, -1};
+    for (int i = 0; i < 10; ++i) {
+        for (int k = 0; k < di.size(); ++k) {
+            int ii = empty.first + di[k];
+            int jj = empty.second + dj[k];
+            bool p = rand() % 2;
+            if (ii >= 0 && ii < NUM_ROWS && jj >= 0 && jj < NUM_COLS && p) {
+                swap(elements[ii][jj], elements[empty.first][empty.second]);
+                empty = {ii, jj};
+                break;
+            }
+        }
+    }
     
-    random_device rd;
-    mt19937 g(rd());
-    for (int i = 0; i < NUM_ROWS; ++i) {
-        shuffle(elements[i].begin(), elements[i].end()-1, g);
-    }
 }
 
-void Board :: Draw() {
-    vector<float> textures_coord = {1, 1, 1, 0, 0, 0, 0, 1};
-    int tx = 0, ty = 0;
-    glTranslatef(0, 0, -7);
+void Board :: Draw(bool is_real) {
     for (int n = 0; n < NUM_ROWS; ++n) {
         for (int m = 0; m < NUM_COLS; ++m) {
-            if (elements[n][m] == NUM_ROWS * NUM_COLS) {
-                continue;
-            }
-            tx = m;
-            ty = n;
-            glEnable(GL_TEXTURE_2D);
-            glEnable(GL_LIGHTING);
-            glEnable(GL_LIGHT0);
-            for (size_t i = 0; i < simplex.NUM_FACES; ++i) {
-                glPushMatrix();
-                {
-                    glBindTexture(GL_TEXTURE_2D, elements[n][m]);
-                    glEnableClientState(GL_VERTEX_ARRAY);
-                    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                    glRotatef(rotate_x, 1, 0, 0);
-                    glRotatef(rotate_y, 0, 1, 0);
-                    glRotatef(rotate_z, 0, 0, 1);
-                    glTranslatef(-NUM_ROWS/2.0 + 0.5 + tx, NUM_COLS/2.0 - 0.5 - ty, 0);
-                    float* face = new float[3 * simplex.faces[i].size()];
-                    int l = 0;
-                    for (int j = 0; j < simplex.NUM_VERTEX; ++j) {
-                        face[l++] = simplex.faces[i][j].GetX();
-                        face[l++] = simplex.faces[i][j].GetY();
-                        face[l++] = simplex.faces[i][j].GetZ();
-                    }
-                    glNormal3f(simplex.normals[i].GetX(), simplex.normals[i].GetY(), simplex.normals[i].GetZ());
-                    glVertexPointer(3, GL_FLOAT, 0, face);
-                    glTexCoordPointer(2, GL_FLOAT, 0, textures_coord.data());
-                    glDrawArrays(GL_POLYGON, 0, 4);
-                    glDisableClientState(GL_VERTEX_ARRAY);
-                    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                    delete[] face;
+            if (is_real) {
+                if (elements[n][m] == NUM_ROWS * NUM_COLS) {
+                    continue;
                 }
-                glPopMatrix();
+                glEnable(GL_TEXTURE_2D);
+                glEnable(GL_LIGHTING);
+                glEnable(GL_LIGHT0);
             }
-            glDisable(GL_TEXTURE_2D);
-            glDisable(GL_LIGHTING);
-            glDisable(GL_LIGHT0);
-        }
-    }
-}
-
-void Board :: FakeDraw() {
-    int tx = 0, ty = 0;
-    glTranslatef(0, 0, -7);
-    for (int n = 0; n < NUM_ROWS; ++n) {
-        for (int m = 0; m < NUM_COLS; ++m) {
-            tx = m;
-            ty = n;
-            for (size_t i = 0; i < simplex.NUM_FACES; ++i) {
-                glPushMatrix();
-                {
-                    glEnableClientState(GL_VERTEX_ARRAY);
-                    glRotatef(rotate_x, 1, 0, 0);
-                    glRotatef(rotate_y, 0, 1, 0);
-                    glRotatef(rotate_z, 0, 0, 1);
-                    glTranslatef(-NUM_ROWS/2.0 + 0.5 + tx, NUM_COLS/2.0 - 0.5 - ty, 0);
-                    float* face = new float[3 * simplex.faces[i].size()];
-                    int l = 0;
-                    for (int j = 0; j < simplex.NUM_VERTEX; ++j) {
-                        face[l++] = simplex.faces[i][j].GetX();
-                        face[l++] = simplex.faces[i][j].GetY();
-                        face[l++] = simplex.faces[i][j].GetZ();
-                    }
-                    glColor3ub(elements[n][m], 0, elements[n][m]);
-                    glVertexPointer(3, GL_FLOAT, 0, face);
-                    glDrawArrays(GL_POLYGON, 0, 4);
-                    glDisableClientState(GL_VERTEX_ARRAY);
-                    delete[] face;
-                }
-                glPopMatrix();
+            float tx = -NUM_ROWS/2.0 + 0.5 + m;
+            float ty =  NUM_COLS/2.0 - 0.5 - n;
+            simplex.Draw(rotate_x, rotate_y, rotate_z, tx, ty, elements[n][m], is_real);
+            if (is_real) {
+                glDisable(GL_TEXTURE_2D);
+                glDisable(GL_LIGHTING);
+                glDisable(GL_LIGHT0);
             }
         }
     }
-    glColor3ub(255, 255, 255);
 }
 
 void Board :: Move(int color) {
