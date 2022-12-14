@@ -10,23 +10,14 @@
 #include "./Block.hpp"
 using namespace std;
 
-class Board: protected Block {
+class Board: public Block {
     public:
-        Board();
+        Board() {};
+        Board(int&, string);
         void Move(int);
 };
 
- Board :: Board() {
-    NUM_ROWS = 4;
-    NUM_COLS = 4;
-    elements.resize(NUM_ROWS, vector<int>(NUM_COLS));
-
-    int ind = 1;
-    for (int i = 0; i < NUM_ROWS; ++i) {
-        for (int j = 0; j < NUM_COLS; ++j) {
-            elements[i][j] = ind++;
-        }
-    }
+ Board :: Board(int& ind, string simplex_path) : Block(4, 4, ind, simplex_path) {
     pair<int, int> empty = {NUM_ROWS-1, NUM_COLS-1};
     vector<int> di = {1, -1, 0, 0};
     vector<int> dj = {0,  0, 1, -1};

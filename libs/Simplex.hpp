@@ -63,9 +63,9 @@ void Simplex :: Draw(int rotate_x, int rotate_y, int rotate_z, int element, int 
             glRotatef(rotate_z, 0, 0, 1);
             double tx, ty;
             if (NUM_COLS % 2 == 0) {
-                tx = ((NUM_COLS - 1)/2.0  - m) * width;
+                tx = -((NUM_COLS - 1)/2.0  - m) * width;
             } else {
-                tx = (NUM_COLS/2  - m) * width;
+                tx = -(NUM_COLS/2  - m) * width;
             }
             if (NUM_ROWS % 2 == 0) {
                 ty = ((NUM_ROWS - 1)/2.0 - n) * height;

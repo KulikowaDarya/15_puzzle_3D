@@ -17,23 +17,39 @@ class Block {
         Simplex simplex;
         vector<vector<int>> elements;
     public:
-        Block();
+        Block() {};
+        Block(int, int, int&, string);
+        int GetN() {return NUM_ROWS;}
+        int GetM() {return NUM_COLS;}
         void ChangeRotateX(int delta) {this->rotate_x += delta;}
         void ChangeRotateY(int delta) {this->rotate_y += delta;}
         void ChangeRotateZ(int delta) {this->rotate_z += delta;}
         void Draw(bool);
 };
 
-Block :: Block() {
+Block :: Block(int n, int m, int& ind, string simplex_path) {
     rotate_x = 0;
     rotate_y = 0;
     rotate_z = 0;
+    NUM_ROWS = n;
+    NUM_COLS = m;
+    simplex = Simplex(simplex_path);
+    elements.resize(NUM_ROWS, vector<int>(NUM_COLS));
+
+    for (int i = 0; i < NUM_ROWS; ++i) {
+        for (int j = 0; j < NUM_COLS; ++j) {
+            elements[i][j] = ind++;
+        }
+    }
 }
 
 void Block :: Draw(bool is_real) {
     for (int n = 0; n < NUM_ROWS; ++n) {
         for (int m = 0; m < NUM_COLS; ++m) {
             if (is_real) {
+                if (elements[n][m] == NUM_COLS*NUM_ROWS) {
+                    continue;
+                }
                 glEnable(GL_TEXTURE_2D);
                 glEnable(GL_LIGHTING);
                 glEnable(GL_LIGHT0);

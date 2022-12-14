@@ -11,13 +11,10 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 #include "libs/stb_image.h"
-#include "libs/Board.hpp"
-#include "libs/Menu.hpp"
+#include "libs/Game.hpp"
 using namespace std;
 
-Board board = Board();
-
-Menu menu = Menu();
+Game game = Game();
 
 void LoadTexture(GLuint tex, const char * filename) {
     glEnable(GL_TEXTURE_2D);
@@ -45,7 +42,7 @@ void Init(void) {
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
 
-    for (int i = 1; i <= board.NUM_COLS * board.NUM_ROWS; ++i) {
+    for (int i = 1; i <= game.board.GetN() * game.board.GetM(); ++i) {
         string path = "images/" + to_string(i) + ".bmp";
         LoadTexture(i, path.c_str());
     }
@@ -54,13 +51,13 @@ void Init(void) {
 void SpecialKeys(int key, int x, int y) {
     const int delta=10;
     if (key == GLUT_KEY_DOWN)
-        board.ChangeRotateX(delta);
+        game.board.ChangeRotateX(delta);
     else if (key == GLUT_KEY_UP)
-        board.ChangeRotateX(-delta);
+        game.board.ChangeRotateX(-delta);
     else if (key == GLUT_KEY_RIGHT)
-        board.ChangeRotateZ(-delta);
+        game.board.ChangeRotateZ(-delta);
     else if (key == GLUT_KEY_LEFT)
-        board.ChangeRotateZ(delta);
+        game.board.ChangeRotateZ(delta);
     glutPostRedisplay();
 }
 
@@ -80,7 +77,7 @@ void BaseDisplay() {
 
 void Display() {
     BaseDisplay();
-    board.Draw(true);
+    game.board.Draw(true);
     //menu.Draw(true);
     glFlush();
     glutSwapBuffers();
@@ -88,14 +85,14 @@ void Display() {
 
 void FakeDisplay() {
     BaseDisplay();
-    board.Draw(false);
+    game.board.Draw(false);
 }
 
 void OnClick(int &x, int &y) {
     FakeDisplay();
     unsigned char color[3];
     glReadPixels(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
-    board.Move(color[0]);
+    game.board.Move(color[0]);
 }
 
 void MouseKeys(int key, int state, int x, int y) {
