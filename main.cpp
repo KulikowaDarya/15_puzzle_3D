@@ -42,7 +42,10 @@ void Init(void) {
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
 
-    for (int i = 1; i <= game.board.GetN() * game.board.GetM(); ++i) {
+    int N = game.board.GetN() * game.board.GetM();
+    N += game.menu.GetN() * game.menu.GetM();
+    N += game.victory.GetN() * game.victory.GetM();
+    for (int i = 1; i <= N; ++i) {
         string path = "images/" + to_string(i) + ".bmp";
         LoadTexture(i, path.c_str());
     }
@@ -50,14 +53,26 @@ void Init(void) {
 
 void SpecialKeys(int key, int x, int y) {
     const int delta=10;
-    if (key == GLUT_KEY_DOWN)
+    if (key == GLUT_KEY_DOWN) {
         game.board.ChangeRotateX(delta);
-    else if (key == GLUT_KEY_UP)
+        game.menu.ChangeRotateX(delta);
+        game.victory.ChangeRotateX(delta);
+    }
+    else if (key == GLUT_KEY_UP) {
         game.board.ChangeRotateX(-delta);
-    else if (key == GLUT_KEY_RIGHT)
+        game.menu.ChangeRotateX(-delta);
+        game.victory.ChangeRotateX(-delta);
+    }
+    else if (key == GLUT_KEY_RIGHT) {
         game.board.ChangeRotateZ(-delta);
-    else if (key == GLUT_KEY_LEFT)
+        game.menu.ChangeRotateZ(-delta);
+        game.victory.ChangeRotateZ(-delta);
+    }
+    else if (key == GLUT_KEY_LEFT) {
         game.board.ChangeRotateZ(delta);
+        game.menu.ChangeRotateZ(delta);
+        game.victory.ChangeRotateZ(delta);
+    }
     glutPostRedisplay();
 }
 
@@ -77,22 +92,55 @@ void BaseDisplay() {
 
 void Display() {
     BaseDisplay();
-    game.board.Draw(true);
-    //menu.Draw(true);
+    if (game.Is_Show("menu")) {
+        game.menu.Draw(true);
+    } else if (game.Is_Show("board")) {
+        int finished = game.board.Draw(true);
+        if (finished == game.board.GetN() * game.board.GetM() - 1) {
+            game.Switch("board", "victory");
+        }
+    } else if (game.Is_Show("victory")) {
+        game.victory.Draw(true);
+    }
     glFlush();
     glutSwapBuffers();
 }
 
 void FakeDisplay() {
     BaseDisplay();
-    game.board.Draw(false);
+    if (game.Is_Show("menu")) {
+        game.menu.Draw(false);
+    } else if (game.Is_Show("board")) {
+        game.board.Draw(false);
+    } else if (game.Is_Show("victory")) {
+        game.victory.Draw(false);
+    }
 }
 
 void OnClick(int &x, int &y) {
     FakeDisplay();
     unsigned char color[3];
     glReadPixels(x, glutGet(GLUT_WINDOW_HEIGHT) - y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
-    game.board.Move(color[0]);
+    if (game.Is_Show("menu")) {
+        if (color[0] == game.NEW_GAME) {
+            game.board.Restart();
+            game.Switch("menu", "board");
+            glutPostRedisplay();
+        } else if (color[0] == game.EXIT) {
+            exit(0);
+        }
+    } else if (game.Is_Show("board")) {
+        game.board.Move(color[0]);
+    } else if (game.Is_Show("victory")) {
+        if (color[0] == game.RESTART) {
+            game.Switch("victory", "board");
+            game.board.Restart();
+            glutPostRedisplay();
+        } else if (color[0] == game.MENU) {
+            game.Switch("victory", "menu");
+            glutPostRedisplay();
+        }
+    }
 }
 
 void MouseKeys(int key, int state, int x, int y) {

@@ -24,11 +24,11 @@ class Block {
         void ChangeRotateX(int delta) {this->rotate_x += delta;}
         void ChangeRotateY(int delta) {this->rotate_y += delta;}
         void ChangeRotateZ(int delta) {this->rotate_z += delta;}
-        void Draw(bool);
+        int Draw(bool);
 };
 
 Block :: Block(int n, int m, int& ind, string simplex_path) {
-    rotate_x = 0;
+    rotate_x = -20;
     rotate_y = 0;
     rotate_z = 0;
     NUM_ROWS = n;
@@ -43,7 +43,8 @@ Block :: Block(int n, int m, int& ind, string simplex_path) {
     }
 }
 
-void Block :: Draw(bool is_real) {
+int Block :: Draw(bool is_real) {
+    int finished = 0;
     for (int n = 0; n < NUM_ROWS; ++n) {
         for (int m = 0; m < NUM_COLS; ++m) {
             if (is_real) {
@@ -54,7 +55,7 @@ void Block :: Draw(bool is_real) {
                 glEnable(GL_LIGHTING);
                 glEnable(GL_LIGHT0);
             }
-            simplex.Draw(rotate_x, rotate_y, rotate_z, elements[n][m], n, m, NUM_ROWS, NUM_COLS, is_real);
+            finished += simplex.Draw(rotate_x, rotate_y, rotate_z, elements[n][m], n, m, NUM_ROWS, NUM_COLS, is_real);
             if (is_real) {
                 glDisable(GL_TEXTURE_2D);
                 glDisable(GL_LIGHTING);
@@ -62,6 +63,7 @@ void Block :: Draw(bool is_real) {
             }
         }
     }
+    return finished;
 }
 
 #endif

@@ -18,7 +18,7 @@ class Simplex {
     public:
         Simplex() {};
         Simplex(string);
-        void Draw(int, int, int, int, int, int, int, int, bool);
+        int Draw(int, int, int, int, int, int, int, int, bool);
     friend class Board;
 };
 
@@ -44,7 +44,8 @@ Simplex :: Simplex(string path) {
     }   
 }
 
-void Simplex :: Draw(int rotate_x, int rotate_y, int rotate_z, int element, int n, int m, int NUM_ROWS, int NUM_COLS, bool is_real) {
+int Simplex :: Draw(int rotate_x, int rotate_y, int rotate_z, int element, int n, int m, int NUM_ROWS, int NUM_COLS, bool is_real) {
+    int finished = 0;
     vector<float> textures_coord = {1, 1, 1, 0, 0, 0, 0, 1};
     for (size_t i = 0; i < NUM_FACES; ++i) {
         glPushMatrix();
@@ -53,6 +54,7 @@ void Simplex :: Draw(int rotate_x, int rotate_y, int rotate_z, int element, int 
             if (is_real) {
                 // if element in right place - color changes to green
                 if (element == n*NUM_COLS + m + 1) {
+                    finished = 1;
                     glColor3ub(119, 221, 119);
                 }
                 glBindTexture(GL_TEXTURE_2D, element);
@@ -100,6 +102,7 @@ void Simplex :: Draw(int rotate_x, int rotate_y, int rotate_z, int element, int 
         }
         glPopMatrix();
     }
+    return finished;
 }
 
 #endif
