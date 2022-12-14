@@ -12,9 +12,12 @@
 #include <SFML/System.hpp>
 #include "libs/stb_image.h"
 #include "libs/Board.hpp"
+#include "libs/Menu.hpp"
 using namespace std;
 
 Board board = Board();
+
+Menu menu = Menu();
 
 void LoadTexture(GLuint tex, const char * filename) {
     glEnable(GL_TEXTURE_2D);
@@ -72,18 +75,20 @@ void BaseDisplay() {
         glLightfv(GL_LIGHT0, GL_POSITION, position);
     }
     glPopMatrix();
+    glTranslatef(0, 0, -7);
 }
 
 void Display() {
     BaseDisplay();
-    board.Draw();
+    board.Draw(true);
+    //menu.Draw(true);
     glFlush();
     glutSwapBuffers();
 }
 
 void FakeDisplay() {
     BaseDisplay();
-    board.FakeDraw();
+    board.Draw(false);
 }
 
 void OnClick(int &x, int &y) {
